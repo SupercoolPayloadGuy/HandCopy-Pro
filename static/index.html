@@ -193,6 +193,9 @@ const api = (() => {
     printJob:id=>j(`/documents/jobs/${id}/print`,{method:"POST"}),
     getGcode:id=>fetch(`/api/documents/jobs/${id}/gcode`).then(r=>r.text()),
     deleteJob:id=>j(`/documents/jobs/${id}`,{method:"DELETE"}).catch(()=>null),
+    getRobotConfig:()=>j("/robot/config"),
+    saveRobotConfig:d=>j("/robot/config",{method:"POST",body:JSON.stringify(d)}),
+    testRobotConfig:d=>j("/robot/config/test",{method:"POST",body:JSON.stringify(d)}),
     robotStatus:()=>j("/robot/status"),
     robotHome:()=>j("/robot/home",{method:"POST"}),
     robotStop:()=>j("/robot/stop",{method:"POST"}),
@@ -686,14 +689,134 @@ function RobotControl({robot}){
   const [raw,setRaw]=useState("G0 X10 Y10 F3000");
   const [busy,setBusy]=useState(false);
   const logRef=useRef();
+
+  // Config state
+  const [cfg,setCfg]=useState({ip:"",port:80,pen_down_cmd:"M3",pen_up_cmd:"M5",feed_rate:800,rapid_rate:3000});
+  const [cfgLoaded,setCfgLoaded]=useState(false);
+  const [testResult,setTestResult]=useState(null); // {ok, message}
+  const [savingCfg,setSavingCfg]=useState(false);
+  const [testingCfg,setTestingCfg]=useState(false);
+
   const addLog=(msg,ok=true)=>setLog(l=>[...l.slice(-80),`[${new Date().toLocaleTimeString()}] ${ok?"✓":"✗"} ${msg}`]);
   useEffect(()=>{if(logRef.current)logRef.current.scrollTop=logRef.current.scrollHeight},[log]);
   const cmd=async(lbl,fn)=>{setBusy(true);addLog(`> ${lbl}`);try{const r=await fn();addLog(typeof r==="string"?r:JSON.stringify(r));}catch(e){addLog(e.message,false);toast(e.message,"error")}setBusy(false)};
   const ok=robot.state!=="disconnected";
+
+  // Load config on mount
+  useEffect(()=>{
+    fetch("/api/robot/config").then(r=>r.json()).then(d=>{
+      setCfg({ip:d.ip,port:d.port,pen_down_cmd:d.pen_down_cmd,pen_up_cmd:d.pen_up_cmd,feed_rate:d.feed_rate,rapid_rate:d.rapid_rate});
+      setCfgLoaded(true);
+    }).catch(()=>setCfgLoaded(true));
+  },[]);
+
+  const saveConfig=async()=>{
+    setSavingCfg(true);setTestResult(null);
+    try{
+      const r=await fetch("/api/robot/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+      const d=await r.json();
+      if(!r.ok) throw new Error(d.detail||"Save failed");
+      toast(`Config saved — robot at ${cfg.ip}:${cfg.port}`,"success");
+      addLog(`> Config updated: ${cfg.ip}:${cfg.port}`);
+    }catch(e){toast(e.message,"error")}
+    setSavingCfg(false);
+  };
+
+  const testConfig=async()=>{
+    setTestingCfg(true);setTestResult(null);
+    try{
+      const r=await fetch("/api/robot/config/test",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+      const d=await r.json();
+      setTestResult(d);
+      addLog(`> Test ${cfg.ip}:${cfg.port} → ${d.message}`, d.ok);
+    }catch(e){setTestResult({ok:false,message:e.message})}
+    setTestingCfg(false);
+  };
+
+  const upd=k=>e=>setCfg(c=>({...c,[k]:e.target.type==="number"?parseInt(e.target.value)||0:e.target.value}));
+
   return <div className="fu">
-    <div className="g2" style={{alignItems:"start"}}>
+    {/* Top row: status + config side by side */}
+    <div className="g2" style={{alignItems:"start",marginBottom:0}}>
+
+      {/* Left col */}
       <div>
-        <Card title="State">
+        <Card title="Connection & Motion Settings">
+          {!cfgLoaded?<Sp/>:<>
+            <div style={{fontSize:".65rem",color:"var(--dim)",marginBottom:14,lineHeight:1.7}}>
+              Find your ESP32's IP in the Arduino Serial Monitor — it prints on boot.<br/>
+              Changes take effect immediately and are saved to <code style={{color:"var(--amber)"}}>your .env</code> for next restart.
+            </div>
+
+            <div style={{display:"flex",gap:9,marginBottom:10}}>
+              <div style={{flex:3}}>
+                <label className="lbl">ESP32 IP Address</label>
+                <input className="inp" value={cfg.ip} onChange={upd("ip")} placeholder="192.168.1.100"
+                  style={{fontFamily:"var(--mono)",letterSpacing:".05em"}}/>
+              </div>
+              <div style={{flex:1}}>
+                <label className="lbl">Port</label>
+                <input className="inp" type="number" value={cfg.port} onChange={upd("port")} min="1" max="65535"/>
+              </div>
+            </div>
+
+            <div className="div"/>
+            <div style={{fontSize:".6rem",letter_spacing:".1em",textTransform:"uppercase",color:"var(--dim)",marginBottom:10}}>Motion</div>
+
+            <div className="g2" style={{marginBottom:10}}>
+              <div>
+                <label className="lbl">Pen Down command</label>
+                <input className="inp" value={cfg.pen_down_cmd} onChange={upd("pen_down_cmd")} placeholder="M3"
+                  style={{textTransform:"uppercase"}}/>
+                <div style={{fontSize:".6rem",color:"var(--muted)",marginTop:4}}>Usually M3 (servo or spindle on)</div>
+              </div>
+              <div>
+                <label className="lbl">Pen Up command</label>
+                <input className="inp" value={cfg.pen_up_cmd} onChange={upd("pen_up_cmd")} placeholder="M5"
+                  style={{textTransform:"uppercase"}}/>
+                <div style={{fontSize:".6rem",color:"var(--muted)",marginTop:4}}>Usually M5 (servo or spindle off)</div>
+              </div>
+              <div>
+                <label className="lbl">Writing speed (mm/min)</label>
+                <input className="inp" type="number" value={cfg.feed_rate} onChange={upd("feed_rate")} min="50" max="5000" step="50"/>
+                <div style={{fontSize:".6rem",color:"var(--muted)",marginTop:4}}>Speed when pen is writing</div>
+              </div>
+              <div>
+                <label className="lbl">Travel speed (mm/min)</label>
+                <input className="inp" type="number" value={cfg.rapid_rate} onChange={upd("rapid_rate")} min="100" max="10000" step="100"/>
+                <div style={{fontSize:".6rem",color:"var(--muted)",marginTop:4}}>Speed when pen is lifted</div>
+              </div>
+            </div>
+
+            {testResult&&<div className={`alert ${testResult.ok?"as":"ae"}`} style={{marginBottom:12}}>
+              <span>{testResult.ok?"✓":"✕"} {testResult.message}</span>
+            </div>}
+
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              <button className="btn bc" disabled={testingCfg||savingCfg} onClick={testConfig}>
+                {testingCfg?<><Sp/> Testing…</>:"⚡ Test Connection"}
+              </button>
+              <button className="btn bp" disabled={savingCfg||testingCfg} onClick={saveConfig}>
+                {savingCfg?<><Sp/> Saving…</>:"💾 Save Config"}
+              </button>
+            </div>
+          </>}
+        </Card>
+
+        <Card title="Manual G-code">
+          <div style={{display:"flex",gap:8}}>
+            <input className="inp" style={{flex:1}} value={raw} onChange={e=>setRaw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&cmd(raw,()=>api.sendRaw(raw))} placeholder="G0 X10 Y10 F3000"/>
+            <button className="btn bp" disabled={busy} onClick={()=>cmd(raw,()=>api.sendRaw(raw))}>{busy?<Sp/>:"Send"}</button>
+          </div>
+          <div style={{marginTop:9,fontSize:".63rem",color:"var(--muted)",lineHeight:1.8}}>
+            Common: <code>G28</code> home · <code>G0 X0 Y0</code> origin · <code>M3</code> pen↓ · <code>M5</code> pen↑
+          </div>
+        </Card>
+      </div>
+
+      {/* Right col */}
+      <div>
+        <Card title="Robot State">
           <div style={{display:"flex",gap:20,marginBottom:18,flexWrap:"wrap"}}>
             <div><div className="sl">State</div><div style={{display:"flex",alignItems:"center",gap:8,marginTop:4}}>
               <div className={`dot ${ok?(robot.state==="idle"?"dot-on":"dot-busy"):"dot-off"}`}/>
@@ -710,22 +833,14 @@ function RobotControl({robot}){
             <button className="ctrl" disabled={busy} onClick={()=>cmd("Resume",()=>api.robotResume())}><span className="ctrl-ic">▶</span><span className="ctrl-l">Resume</span></button>
           </div>
         </Card>
-        <Card title="Manual G-code">
-          <div style={{display:"flex",gap:8}}>
-            <input className="inp" style={{flex:1}} value={raw} onChange={e=>setRaw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&cmd(raw,()=>api.sendRaw(raw))} placeholder="G0 X10 Y10 F3000"/>
-            <button className="btn bp" disabled={busy} onClick={()=>cmd(raw,()=>api.sendRaw(raw))}>{busy?<Sp/>:"Send"}</button>
+
+        <Card title="Console">
+          <div ref={logRef} className="term" style={{height:330}}>
+            {log.map((l,i)=><div key={i} style={{color:l.includes("✗")?"var(--red)":l.includes(">")?"var(--amber)":"#86efac"}}>{l}</div>)}
           </div>
-          <div style={{marginTop:9,fontSize:".63rem",color:"var(--muted)",lineHeight:1.8}}>
-            Common: <code>G28</code> home · <code>G0 X0 Y0</code> origin · <code>M3</code> pen↓ · <code>M5</code> pen↑
-          </div>
+          <button className="btn bgh sm" style={{marginTop:7}} onClick={()=>setLog(["// Cleared"])}>Clear</button>
         </Card>
       </div>
-      <Card title="Console">
-        <div ref={logRef} className="term" style={{height:430}}>
-          {log.map((l,i)=><div key={i} style={{color:l.includes("✗")?"var(--red)":l.includes(">")?"var(--amber)":"#86efac"}}>{l}</div>)}
-        </div>
-        <button className="btn bgh sm" style={{marginTop:7}} onClick={()=>setLog(["// Cleared"])}>Clear</button>
-      </Card>
     </div>
   </div>;
 }
