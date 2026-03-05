@@ -3,7 +3,11 @@ import httpx, logging
 import config
 
 log = logging.getLogger(__name__)
-BASE = f"http://{config.ESP32_IP}:{config.ESP32_PORT}"
+
+
+def _base():
+    """Always read current IP/port — picks up changes made via the UI."""
+    return f"http://{config.ESP32_IP}:{config.ESP32_PORT}"
 
 
 class RobotError(Exception):
@@ -11,13 +15,14 @@ class RobotError(Exception):
 
 
 async def _post(path, timeout=10.0, **kw):
+    base = _base()
     try:
         async with httpx.AsyncClient(timeout=timeout) as c:
-            r = await c.post(BASE+path, **kw)
+            r = await c.post(base+path, **kw)
             r.raise_for_status()
             return {"ok": True, "message": r.text}
     except httpx.ConnectError:
-        raise RobotError(f"Can't reach robot at {BASE} — is the ESP32 powered and on the same WiFi?")
+        raise RobotError(f"Can't reach robot at {base} — is the ESP32 powered and on the same WiFi?")
     except httpx.HTTPStatusError as e:
         raise RobotError(f"Robot returned error {e.response.status_code}")
     except httpx.TimeoutException:
@@ -25,9 +30,10 @@ async def _post(path, timeout=10.0, **kw):
 
 
 async def get_robot_status() -> dict:
+    base = _base()
     try:
         async with httpx.AsyncClient(timeout=2.0) as c:
-            r = await c.get(BASE+"/status")
+            r = await c.get(base+"/status")
             r.raise_for_status()
             return r.json()
     except Exception as e:
