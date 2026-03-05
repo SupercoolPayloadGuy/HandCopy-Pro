@@ -32,7 +32,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .fu{animation:fu .3s ease both}
-/* layout */
 .shell{display:flex;height:100vh;overflow:hidden}
 .sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
 .logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
@@ -45,6 +44,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .ni.on{color:var(--amber);background:rgba(232,160,32,.06)}
 .ni.on::before{content:'';position:absolute;left:0;top:15%;bottom:15%;width:2px;background:var(--amber);box-shadow:0 0 8px var(--amber)}
 .ni-ic{width:18px;text-align:center;font-size:.9rem;flex-shrink:0}
+.exit-btn{margin:10px;border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.06);color:var(--red);padding:10px;cursor:pointer;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.exit-btn:hover{background:rgba(248,113,113,.15);border-color:var(--red)}
 .robot-box{margin:10px;border:1px solid var(--b2);background:var(--s2);padding:13px 15px}
 .rb-title{font-size:.57rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
 .rb-state{display:flex;align-items:center;gap:8px}
@@ -55,19 +56,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .rb-name{font-family:var(--disp);font-size:1.1rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
 .rb-pos{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
 .rp{font-size:.63rem}.rp-a{color:var(--dim)}.rp-v{color:var(--amber);font-weight:600}
-/* main */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .topbar{display:flex;align-items:center;padding:0 30px;height:52px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .page-title{font-family:var(--disp);font-size:1.45rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
 .content{flex:1;overflow-y:auto;padding:26px 30px}
-/* card */
 .card{background:var(--surface);border:1px solid var(--border);padding:20px 22px;margin-bottom:16px;position:relative}
 .card::before,.card::after{content:'';position:absolute;width:14px;height:14px}
 .card::before{top:-1px;left:-1px;border-top:2px solid var(--amber);border-left:2px solid var(--amber)}
 .card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--amber);border-right:2px solid var(--amber)}
 .ct{font-family:var(--disp);font-size:.9rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:10px}
 .ct-line{flex:1;height:1px;background:linear-gradient(to right,var(--b2),transparent)}
-/* btn */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;cursor:pointer;border:1px solid;font-family:var(--mono);font-size:.71rem;letter-spacing:.06em;text-transform:uppercase;transition:all .15s;background:none}
 .btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
 .btn:active{transform:translateY(1px)}
@@ -77,87 +75,86 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .bg{border-color:var(--green);color:var(--green)}.bg:hover{background:rgba(74,222,128,.08)}
 .bgh{border-color:var(--b2);color:var(--dim)}.bgh:hover{border-color:var(--dim);color:var(--ink)}
 .sm{padding:5px 11px;font-size:.65rem}
-/* field */
 .fl{margin-bottom:14px}
 .lbl{display:block;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
 .inp{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--ink);font-family:var(--mono);font-size:.77rem;padding:9px 12px;outline:none;transition:border .15s}
 .inp:focus{border-color:var(--amber);box-shadow:0 0 0 1px rgba(232,160,32,.15)}
 .inp::placeholder{color:var(--muted)}
+textarea.inp{resize:vertical;min-height:120px;line-height:1.7}
 select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23637a94'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:28px}
-/* spinner */
 .sp{width:13px;height:13px;border:2px solid var(--b2);border-top-color:var(--amber);border-radius:50%;animation:spin .55s linear infinite;display:inline-block;flex-shrink:0}
-/* badge */
 .badge{display:inline-flex;align-items:center;padding:2px 7px;font-size:.59rem;letter-spacing:.07em;text-transform:uppercase;border:1px solid}
 .ba{border-color:rgba(232,160,32,.4);color:var(--amber);background:rgba(232,160,32,.08)}
 .bg2{border-color:rgba(74,222,128,.35);color:var(--green);background:rgba(74,222,128,.07)}
 .br2{border-color:rgba(248,113,113,.35);color:var(--red);background:rgba(248,113,113,.07)}
 .bc2{border-color:rgba(56,189,248,.35);color:var(--cyan);background:rgba(56,189,248,.07)}
 .bm{border-color:var(--b2);color:var(--dim);background:var(--s2)}
-/* alert */
 .alert{padding:11px 14px;font-size:.73rem;line-height:1.6;margin-bottom:14px;border-left:3px solid;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .ae{border-color:var(--red);background:rgba(248,113,113,.07);color:#fca5a5}
 .as{border-color:var(--green);background:rgba(74,222,128,.07);color:#86efac}
 .ai{border-color:var(--cyan);background:var(--cg);color:#7dd3fc}
 .aw{border-color:var(--amber);background:var(--ag);color:#fcd34d}
-/* grid */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-/* stat */
 .stat{background:var(--s2);border:1px solid var(--border);padding:14px 16px}
 .sl{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
 .sv{font-family:var(--disp);font-size:2rem;font-weight:700;color:var(--amber);line-height:1}
 .ss{font-size:.63rem;color:var(--muted);margin-top:3px}
-/* table */
 .tbl{width:100%;border-collapse:collapse;font-size:.72rem}
 .tbl th{padding:7px 12px;text-align:left;font-size:.59rem;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--b2);font-weight:400}
 .tbl td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tbody tr:hover td{background:var(--s2)}
-/* dropzone */
-.dz{border:1px dashed var(--b2);padding:34px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.dz{border:1px dashed var(--b2);padding:28px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
 .dz:hover,.dz.drag{border-color:var(--amber);background:var(--ag)}
 .dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.dz-ico{font-size:2.2rem;display:block;margin-bottom:9px}
-.dz-t{font-family:var(--disp);font-size:.95rem;font-weight:600;letter-spacing:.05em;color:var(--ink);margin-bottom:3px}
-.dz-s{font-size:.67rem;color:var(--dim)}
-/* terminal */
+.dz-ico{font-size:2rem;display:block;margin-bottom:8px}
+.dz-t{font-family:var(--disp);font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:3px}
+.dz-s{font-size:.66rem;color:var(--dim)}
 .term{background:#000810;border:1px solid var(--b2);font-family:var(--mono);font-size:.69rem;line-height:1.75;padding:14px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
-/* glyph grid */
 .gg{display:flex;flex-wrap:wrap;gap:5px}
 .gc{width:38px;height:38px;border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:.85rem;cursor:pointer;transition:all .15s;background:var(--s2);color:var(--dim);position:relative}
 .gc:hover{border-color:var(--dim);color:var(--ink)}
 .gc.has{border-color:var(--amber);color:var(--amber);background:rgba(232,160,32,.06)}
 .gc.sel{border-color:var(--cyan);color:var(--cyan);background:rgba(56,189,248,.08)}
 .gc-dot{position:absolute;bottom:2px;right:2px;width:4px;height:4px;background:var(--amber);border-radius:50%}
-/* wizard */
 .wiz{display:flex;gap:3px;margin-bottom:22px}
 .ws{flex:1;padding:9px 10px;text-align:center;font-size:.63rem;letter-spacing:.05em;text-transform:uppercase;background:var(--s2);border:1px solid var(--b2);transition:all .2s}
 .ws.on{border-color:var(--amber);color:var(--amber);background:rgba(232,160,32,.06)}
 .ws.done{border-color:var(--green);color:var(--green);background:rgba(74,222,128,.05)}
 .ws-n{display:block;font-size:.54rem;color:var(--muted);margin-bottom:2px}
-/* profile card */
 .pc{padding:12px 14px;border:1px solid var(--b2);cursor:pointer;transition:all .15s;margin-bottom:7px;position:relative}
 .pc:hover{background:var(--s2)}
 .pc.sel{border-color:var(--amber);background:rgba(232,160,32,.04)}
 .pc.sel::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--amber)}
-/* controls */
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .ctrl{padding:18px 14px;border:1px solid var(--b2);background:var(--s2);cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:7px}
 .ctrl:hover{border-color:var(--amber);background:rgba(232,160,32,.05)}
 .ctrl.red:hover{border-color:var(--red);background:rgba(248,113,113,.05)}
 .ctrl-ic{font-size:1.7rem}.ctrl-l{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
-/* scan preview */
 .scan-wrap{position:relative;background:#e8e0cc;overflow:hidden}
 .scan-wrap img{width:100%;display:block;max-height:480px;object-fit:contain}
 .ocr-box{position:absolute;background:rgba(232,160,32,.18);border:1px solid rgba(232,160,32,.8);cursor:pointer}
 .ocr-box:hover{background:rgba(232,160,32,.38)}
-.ocr-lbl{position:absolute;top:-15px;left:0;white-space:nowrap;font-size:8px;font-family:var(--mono);background:rgba(0,0,0,.85);color:var(--amber);padding:1px 4px;pointer-events:none;max-width:130px;overflow:hidden;text-overflow:ellipsis}
-/* divider */
+.ocr-lbl{position:absolute;top:-15px;left:0;white-space:nowrap;font-size:8px;font-family:var(--mono);background:rgba(0,0,0,.85);color:var(--amber);padding:1px 4px;pointer-events:none}
 .div{height:1px;background:var(--border);margin:16px 0}
-/* toast */
 .toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--surface);border:1px solid var(--b2);padding:13px 16px;font-size:.73rem;min-width:250px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:fu .25s ease;display:flex;align-items:flex-start;gap:9px}
 .toast.s{border-left:3px solid var(--green)}.toast.e{border-left:3px solid var(--red)}.toast.i{border-left:3px solid var(--cyan)}
+/* tab bar */
+.tabs{display:flex;gap:2px;margin-bottom:18px}
+.tab{padding:8px 16px;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid var(--b2);background:var(--s2);color:var(--dim);transition:all .15s}
+.tab:hover{color:var(--ink)}
+.tab.on{border-color:var(--amber);color:var(--amber);background:rgba(232,160,32,.06)}
+/* calligraphr info box */
+.info-box{border:1px solid var(--b2);background:var(--s2);padding:14px 16px;font-size:.73rem;color:var(--dim);line-height:1.8}
+.info-box b{color:var(--ink)}
+.info-box a{color:var(--cyan);text-decoration:none}
+.info-box a:hover{text-decoration:underline}
+/* type & print textarea big */
+.big-textarea{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--ink);font-family:var(--serif);font-size:1.1rem;line-height:1.9;padding:16px;outline:none;resize:vertical;min-height:200px;transition:border .15s}
+.big-textarea:focus{border-color:var(--amber)}
+.big-textarea::placeholder{color:var(--muted);font-style:italic}
 @media(max-width:760px){.sidebar{display:none}.g2,.g3,.g4{grid-template-columns:1fr}.wiz{flex-direction:column}.content{padding:16px 14px}}
 </style>
 </head>
@@ -165,35 +162,36 @@ select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+x
 <script type="text/babel">
 const {useState,useEffect,useRef} = React;
 
-/* ── API (always same origin /api/...) ── */
 const api = (() => {
-  const base = "/api";
-  const j = async (path, opts={}) => {
-    const r = await fetch(base+path, {...opts, headers:{"Content-Type":"application/json",...(opts.headers||{})}});
+  const j = async (path,opts={}) => {
+    const r = await fetch("/api"+path,{...opts,headers:{"Content-Type":"application/json",...(opts.headers||{})}});
     if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||`Error ${r.status}`);}
     if(r.status===204) return null;
     return r.json();
   };
   const u = async (path,fd) => {
-    const r = await fetch(base+path,{method:"POST",body:fd});
+    const r = await fetch("/api"+path,{method:"POST",body:fd});
     if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||`Error ${r.status}`);}
     return r.json();
   };
   return {
     health:()=>j("/health"),
+    shutdown:()=>j("/shutdown",{method:"POST"}),
     listProfiles:()=>j("/profiles/"),
     createProfile:d=>j("/profiles/",{method:"POST",body:JSON.stringify(d)}),
     updateProfile:(id,d)=>j(`/profiles/${id}`,{method:"PATCH",body:JSON.stringify(d)}),
     deleteProfile:id=>j(`/profiles/${id}`,{method:"DELETE"}).catch(()=>null),
     listGlyphs:id=>j(`/profiles/${id}/glyphs`),
     uploadGlyph:(pid,char,file)=>{const fd=new FormData();fd.append("file",file);return u(`/profiles/${pid}/glyphs/upload-image?character=${encodeURIComponent(char)}`,fd)},
-    analyzeSample:(pid,file)=>{const fd=new FormData();fd.append("file",file);return u(`/profiles/${pid}/analyze-sample`,fd)},
+    uploadCalligraphr:(pid,file)=>{const fd=new FormData();fd.append("file",file);return u(`/profiles/${pid}/glyphs/upload-calligraphr`,fd)},
+    measureSlant:(pid,file)=>{const fd=new FormData();fd.append("file",file);return u(`/profiles/${pid}/measure-slant`,fd)},
     scanPreview:(file,dpi)=>{const fd=new FormData();fd.append("file",file);return u(`/documents/scan-preview?dpi=${dpi}`,fd)},
     createJobFromScan:(pid,file,dpi)=>{const fd=new FormData();fd.append("file",file);return u(`/documents/jobs/from-scan?profile_id=${pid}&dpi=${dpi}`,fd)},
+    createJobFromText:(pid,text,x,y,w,h)=>j(`/documents/jobs/from-text`,{method:"POST",body:JSON.stringify({profile_id:pid,text,x_mm:x,y_mm:y,max_width_mm:w,char_height_mm:h})}),
     listJobs:()=>j("/documents/jobs"),
     generateGcode:id=>j(`/documents/jobs/${id}/generate`,{method:"POST"}),
     printJob:id=>j(`/documents/jobs/${id}/print`,{method:"POST"}),
-    getGcode:id=>fetch(base+`/documents/jobs/${id}/gcode`).then(r=>r.text()),
+    getGcode:id=>fetch(`/api/documents/jobs/${id}/gcode`).then(r=>r.text()),
     deleteJob:id=>j(`/documents/jobs/${id}`,{method:"DELETE"}).catch(()=>null),
     robotStatus:()=>j("/robot/status"),
     robotHome:()=>j("/robot/home",{method:"POST"}),
@@ -204,7 +202,7 @@ const api = (() => {
   };
 })();
 
-/* ── Toast ── */
+/* Toast */
 let _setToast=null;
 function ToastHost(){
   const [t,set]=useState(null);
@@ -215,13 +213,11 @@ function ToastHost(){
 }
 const toast=(msg,type="info")=>{if(_setToast)_setToast({msg,type})};
 
-/* ── Helpers ── */
 const Sp=()=><span className="sp"/>;
 function Bud({s}){const m={pending:"bm",generating:"ba",ready:"bc2",printing:"ba",done:"bg2",error:"br2",disconnected:"br2"};return <span className={`badge ${m[s]||"bm"}`}>{s}</span>}
 function Alrt({type="i",children,onClose}){return <div className={`alert a${type}`}><span>{children}</span>{onClose&&<button onClick={onClose} style={{background:"none",border:"none",color:"inherit",cursor:"pointer",opacity:.6}}>✕</button>}</div>}
 function Card({title,children,style}){return <div className="card" style={style}><div className="card-c"/><div className="card-cr"/>{title&&<div className="ct">{title}<span className="ct-line"/></div>}{children}</div>}
 
-/* ── Robot status hook ── */
 function useRobot(){
   const [s,set]=useState({state:"disconnected",pos:{x:0,y:0}});
   useEffect(()=>{
@@ -232,7 +228,7 @@ function useRobot(){
   return s;
 }
 
-/* ════════════ DASHBOARD ════════════ */
+/* ── Dashboard ── */
 function Dashboard({robot}){
   const [d,setD]=useState({jobs:[],profiles:[]});
   const [loading,setL]=useState(true);
@@ -247,11 +243,11 @@ function Dashboard({robot}){
     </div>
     <div className="g2">
       <Card title="How to use">
-        <div style={{fontFamily:"var(--serif)",fontSize:"1rem",lineHeight:2,color:"var(--dim)"}}>
-          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>01 —</span> Go to <b style={{color:"var(--ink)"}}>Profiles</b>, create a handwriting style</div>
-          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>02 —</span> Upload a photo of each letter (A–Z etc.)</div>
-          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>03 —</span> <b style={{color:"var(--ink)"}}>Scan & Print</b> → upload your document</div>
-          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>04 —</span> Generate G-code → click <b style={{color:"var(--ink)"}}>Print</b></div>
+        <div style={{fontFamily:"var(--serif)",fontSize:"1rem",lineHeight:2.1,color:"var(--dim)"}}>
+          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>01 —</span> <b style={{color:"var(--ink)"}}>Profiles</b>: create a style, upload handwriting</div>
+          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>02a —</span> <b style={{color:"var(--ink)"}}>Type & Print</b>: type text → robot writes it</div>
+          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>02b —</span> <b style={{color:"var(--ink)"}}>Scan & Print</b>: scan a doc → robot copies it</div>
+          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>03 —</span> <b style={{color:"var(--ink)"}}>Robot Control</b>: home the robot, then print</div>
         </div>
       </Card>
       <Card title="Recent jobs">
@@ -268,7 +264,7 @@ function Dashboard({robot}){
   </div>;
 }
 
-/* ════════════ PROFILES ════════════ */
+/* ── Profiles ── */
 function Profiles(){
   const [profiles,setP]=useState([]);
   const [sel,setSel]=useState(null);
@@ -278,7 +274,8 @@ function Profiles(){
   const [form,setF]=useState({name:"",description:""});
   const [upChar,setUC]=useState("");
   const [busy,setB]=useState(false);
-  const gRef=useRef(),sRef=useRef();
+  const [tab,setTab]=useState("single"); // "single" | "calligraphr" | "slant"
+  const gRef=useRef(),cRef=useRef(),sRef=useRef();
   const CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!? ".split("");
 
   const load=()=>api.listProfiles().then(setP).catch(()=>{}).finally(()=>setL(false));
@@ -292,21 +289,27 @@ function Profiles(){
     try{await api.createProfile(form);setF({name:"",description:""});setC(false);toast("Profile created","success");load();}
     catch(e){toast(e.message,"error")}
   };
-
   const doDel=async id=>{
     if(!confirm("Delete profile and all its glyphs?"))return;
     await api.deleteProfile(id);if(sel?.id===id)setSel(null);load();
   };
-
-  const uploadGlyph=async file=>{
+  const uploadSingle=async file=>{
     if(!upChar||!sel)return;setB(true);
     try{const r=await api.uploadGlyph(sel.id,upChar,file);toast(`'${upChar}' saved — ${r.stroke_count} strokes`,"success");setUC("");pickProfile(sel);}
     catch(e){toast(e.message,"error")}setB(false);
   };
-
-  const doAnalyze=async file=>{
+  const uploadCalligraphr=async file=>{
     if(!sel)return;setB(true);
-    try{const r=await api.analyzeSample(sel.id,file);toast(`Slant ${r.measured.slant_deg}°, waver ${r.measured.baseline_waver}mm`,"success");load();}
+    toast("Processing Calligraphr sheet… this takes a moment","info");
+    try{
+      const r=await api.uploadCalligraphr(sel.id,file);
+      toast(`${r.saved} glyphs extracted: ${r.characters.slice(0,20).join("")}…`,"success");
+      pickProfile(sel);load();
+    }catch(e){toast(e.message,"error")}setB(false);
+  };
+  const measureSlant=async file=>{
+    if(!sel)return;setB(true);
+    try{const r=await api.measureSlant(sel.id,file);toast(`Slant: ${r.slant_deg}°, wobble: ${r.baseline_waver}mm`,"success");load();}
     catch(e){toast(e.message,"error")}setB(false);
   };
 
@@ -332,37 +335,199 @@ function Profiles(){
         </>}
       </Card>
 
-      {sel?<Card title={`Glyphs — ${sel.name}`}>
-        <p style={{fontSize:".68rem",color:"var(--dim)",lineHeight:1.7,marginBottom:12}}><span style={{color:"var(--amber)"}}>Amber</span> = stored · <span style={{color:"var(--cyan)"}}>Cyan</span> = selected for upload. Click a character then upload its image.</p>
-        <div className="gg" style={{marginBottom:14}}>
-          {CHARS.map(c=><div key={c} className={`gc ${hasGlyph(c)?"has":""} ${upChar===c?"sel":""}`} onClick={()=>setUC(upChar===c?"":c)} title={c===" "?"Space":c}>
-            {c===" "?"·":c}{hasGlyph(c)&&<span className="gc-dot"/>}
-          </div>)}
-        </div>
-        <div className="div"/>
-        <div className="lbl" style={{marginBottom:8}}>Upload character image</div>
-        <div style={{display:"flex",gap:9,alignItems:"flex-end",marginBottom:12}}>
-          <div style={{width:64}}>
-            <label className="lbl">Char</label>
-            <input className="inp" style={{textAlign:"center",fontSize:"1.1rem",padding:"6px"}} value={upChar} maxLength={1} onChange={e=>setUC(e.target.value)} placeholder="a"/>
+      {sel?<div>
+        {/* Character coverage */}
+        <Card title={`${sel.name} — ${glyphs.length} characters stored`}>
+          <div className="gg">
+            {CHARS.map(c=><div key={c} className={`gc ${hasGlyph(c)?"has":""} ${upChar===c?"sel":""}`} onClick={()=>{setTab("single");setUC(upChar===c?"":c)}} title={c===" "?"Space":c}>
+              {c===" "?"·":c}{hasGlyph(c)&&<span className="gc-dot"/>}
+            </div>)}
           </div>
-          <div style={{flex:1}}>
-            <label className="lbl">Cropped image (white background)</label>
-            <input ref={gRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>e.target.files[0]&&uploadGlyph(e.target.files[0])}/>
-            <button className="btn bp" style={{width:"100%"}} disabled={!upChar||busy} onClick={()=>gRef.current.click()}>{busy?<><Sp/> Extracting…</>:"📁 Choose image"}</button>
+          <div style={{marginTop:10,fontSize:".63rem",color:"var(--muted)"}}>
+            <span style={{color:"var(--amber)"}}>■</span> stored &nbsp;&nbsp; <span style={{color:"var(--cyan)"}}>■</span> selected for upload
           </div>
-        </div>
-        <div className="div"/>
-        <label className="lbl" style={{marginBottom:6}}>Auto-measure style from full sample</label>
-        <p style={{fontSize:".65rem",color:"var(--muted)",marginBottom:9}}>Upload a photo of a full handwritten page → auto-detects slant and baseline wobble.</p>
-        <input ref={sRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>e.target.files[0]&&doAnalyze(e.target.files[0])}/>
-        <button className="btn bc" disabled={busy} onClick={()=>sRef.current.click()}>{busy?<><Sp/> Analyzing…</>:"🔍 Analyze sample"}</button>
-      </Card>:<Card><div style={{textAlign:"center",padding:"36px 0",color:"var(--muted)",fontSize:".77rem"}}>← Select a profile</div></Card>}
+        </Card>
+
+        {/* Upload tabs */}
+        <Card title="Add handwriting">
+          <div className="tabs">
+            <div className={`tab ${tab==="single"?"on":""}`} onClick={()=>setTab("single")}>Single letter</div>
+            <div className={`tab ${tab==="calligraphr"?"on":""}`} onClick={()=>setTab("calligraphr")}>Calligraphr sheet</div>
+            <div className={`tab ${tab==="slant"?"on":""}`} onClick={()=>setTab("slant")}>Measure style</div>
+          </div>
+
+          {tab==="single"&&<div>
+            <p style={{fontSize:".7rem",color:"var(--dim)",marginBottom:14,lineHeight:1.7}}>
+              Click a letter above → it turns blue → upload a photo of just that letter, written on white paper.
+            </p>
+            <div style={{display:"flex",gap:9,alignItems:"flex-end"}}>
+              <div style={{width:64}}>
+                <label className="lbl">Letter</label>
+                <input className="inp" style={{textAlign:"center",fontSize:"1.1rem",padding:"6px"}} value={upChar} maxLength={1} onChange={e=>setUC(e.target.value)} placeholder="a"/>
+              </div>
+              <div style={{flex:1}}>
+                <label className="lbl">Cropped photo (white background, one letter)</label>
+                <input ref={gRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>e.target.files[0]&&uploadSingle(e.target.files[0])}/>
+                <button className="btn bp" style={{width:"100%"}} disabled={!upChar||busy} onClick={()=>gRef.current.click()}>{busy?<><Sp/> Extracting…</>:"📁 Choose photo"}</button>
+              </div>
+            </div>
+          </div>}
+
+          {tab==="calligraphr"&&<div>
+            <div className="info-box" style={{marginBottom:14}}>
+              <b>Calligraphr</b> is a free website that gives you a printable template with a box for every letter.<br/>
+              You write all letters at once, scan the sheet, upload it here, and all characters are extracted automatically.<br/><br/>
+              <b>Steps:</b><br/>
+              1. Go to <a href="https://www.calligraphr.com" target="_blank">calligraphr.com</a> → create free account<br/>
+              2. Click <b>Download Template</b> → choose <b>Basic Latin</b> → PNG or PDF<br/>
+              3. Print it out, write every character in its box with a dark pen<br/>
+              4. Scan at 300 DPI (or take a flat, well-lit photo with no shadows)<br/>
+              5. Upload the scan below
+            </div>
+            <input ref={cRef} type="file" accept="image/*,.pdf" style={{display:"none"}} onChange={e=>e.target.files[0]&&uploadCalligraphr(e.target.files[0])}/>
+            <div className="dz" onClick={()=>cRef.current.click()}>
+              <input type="file" accept="image/*,.pdf" onChange={e=>e.target.files[0]&&uploadCalligraphr(e.target.files[0])}/>
+              <span className="dz-ico">{busy?"⏳":"📋"}</span>
+              <div className="dz-t">{busy?"Extracting all glyphs…":"Drop filled Calligraphr sheet here"}</div>
+              <div className="dz-s">All letters extracted automatically · PNG, JPG, or PDF</div>
+              {busy&&<div style={{marginTop:10}}><Sp/></div>}
+            </div>
+          </div>}
+
+          {tab==="slant"&&<div>
+            <p style={{fontSize:".7rem",color:"var(--dim)",marginBottom:6,lineHeight:1.7}}>
+              Upload any photo of this person's handwriting — a sentence, a few words, anything.<br/>
+              The app measures <b style={{color:"var(--ink)"}}>how much the letters lean</b> (slant) and <b style={{color:"var(--ink)"}}>how much they bounce</b> on the line (wobble), and adjusts the profile automatically.
+            </p>
+            <p style={{fontSize:".68rem",color:"var(--muted)",marginBottom:14}}>
+              Current: slant <span style={{color:"var(--amber)"}}>{sel.slant_deg}°</span> · wobble <span style={{color:"var(--amber)"}}>{sel.baseline_waver}mm</span>
+            </p>
+            <input ref={sRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>e.target.files[0]&&measureSlant(e.target.files[0])}/>
+            <button className="btn bc" disabled={busy} onClick={()=>sRef.current.click()}>{busy?<><Sp/> Measuring…</>:"📐 Upload handwriting photo"}</button>
+          </div>}
+        </Card>
+      </div>:<Card><div style={{textAlign:"center",padding:"36px 0",color:"var(--muted)",fontSize:".77rem"}}>← Select a profile</div></Card>}
     </div>
   </div>;
 }
 
-/* ════════════ SCAN & PRINT ════════════ */
+/* ── Type & Print ── */
+function TypePrint(){
+  const [profiles,setProfiles]=useState([]);
+  const [pid,setPid]=useState("");
+  const [text,setText]=useState("");
+  const [xMm,setX]=useState("20");
+  const [yMm,setY]=useState("20");
+  const [wMm,setW]=useState("170");
+  const [hMm,setH]=useState("5");
+  const [job,setJob]=useState(null);
+  const [gcode,setGcode]=useState("");
+  const [loading,setL]=useState(false);
+
+  useEffect(()=>{api.listProfiles().then(setProfiles).catch(()=>{})},[]);
+
+  const createAndGenerate=async()=>{
+    if(!pid||!text.trim()){toast("Select a profile and enter some text","error");return}
+    setL(true);
+    try{
+      const r=await api.createJobFromText(pid,text.trim(),parseFloat(xMm),parseFloat(yMm),parseFloat(wMm),parseFloat(hMm));
+      await api.generateGcode(r.job_id);
+      const gc=await api.getGcode(r.job_id);
+      setGcode(gc);setJob(r);
+      toast("G-code ready — click Print Now","success");
+    }catch(e){toast(e.message,"error")}setL(false);
+  };
+
+  const print=async()=>{
+    if(!job)return;setL(true);
+    try{await api.printJob(job.job_id);toast("Print job sent to robot!","success");setJob({...job,status:"done"});}
+    catch(e){toast(e.message,"error")}setL(false);
+  };
+
+  const dl=()=>{
+    if(!gcode)return;
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([gcode],{type:"text/plain"}));a.download="handwriting.gcode";a.click();
+  };
+
+  return <div className="fu">
+    <div className="g2" style={{alignItems:"start"}}>
+      <div>
+        <Card title="Text to write">
+          <div className="fl">
+            <label className="lbl">Handwriting profile</label>
+            <select className="inp" value={pid} onChange={e=>setPid(e.target.value)}>
+              <option value="">— Choose profile —</option>
+              {profiles.map(p=><option key={p.id} value={p.id}>{p.name} ({p.glyph_count} glyphs)</option>)}
+            </select>
+          </div>
+          <div className="fl">
+            <label className="lbl">Text</label>
+            <textarea className="big-textarea" value={text} onChange={e=>setText(e.target.value)} placeholder="Type what you want the robot to write…"/>
+          </div>
+        </Card>
+
+        <Card title="Position on paper">
+          <div className="g2">
+            <div className="fl"><label className="lbl">Start X (mm from left edge)</label><input className="inp" type="number" value={xMm} onChange={e=>setX(e.target.value)} min="0" max="200"/></div>
+            <div className="fl"><label className="lbl">Start Y (mm from top edge)</label><input className="inp" type="number" value={yMm} onChange={e=>setY(e.target.value)} min="0" max="280"/></div>
+            <div className="fl"><label className="lbl">Max line width (mm)</label><input className="inp" type="number" value={wMm} onChange={e=>setW(e.target.value)} min="20" max="200"/></div>
+            <div className="fl"><label className="lbl">Letter height (mm)</label><input className="inp" type="number" value={hMm} onChange={e=>setH(e.target.value)} min="2" max="30" step="0.5"/></div>
+          </div>
+          <div style={{fontSize:".65rem",color:"var(--muted)",lineHeight:1.7,marginTop:4}}>
+            Tip: A4 is 210×297mm. Default 5mm letters look natural. Margins of 20mm on each side leave 170mm of writing width.
+          </div>
+        </Card>
+
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <button className="btn bp" disabled={!pid||!text.trim()||loading} onClick={createAndGenerate}>
+            {loading?<><Sp/> Generating…</>:"⚙ Generate G-code"}
+          </button>
+          {gcode&&<>
+            <button className="btn bg" disabled={loading||job?.status==="done"} onClick={print}>
+              {loading?<><Sp/> Sending…</>:"🖨 Print Now"}
+            </button>
+            <button className="btn bgh" onClick={dl}>⬇ .gcode</button>
+          </>}
+        </div>
+      </div>
+
+      {/* Preview */}
+      <Card title="Paper preview">
+        {text?<div style={{background:"white",border:"1px solid #ccc",position:"relative",paddingTop:`${(297/210*100)}%`,overflow:"hidden"}}>
+          <div style={{position:"absolute",inset:0,padding:"2%"}}>
+            <div style={{
+              position:"absolute",
+              left:`${parseFloat(xMm)/210*100}%`,
+              top:`${parseFloat(yMm)/297*100}%`,
+              width:`${parseFloat(wMm)/210*100}%`,
+              fontFamily:"'Crimson Pro',serif",
+              fontSize:`${parseFloat(hMm)/297*100*4}vh`,
+              color:"#1a1a1a",lineHeight:1.8,
+              wordBreak:"break-word",
+            }}>
+              {text}
+            </div>
+          </div>
+          <div style={{position:"absolute",bottom:4,right:8,fontSize:"9px",color:"#999",fontFamily:"monospace"}}>A4 210×297mm</div>
+        </div>:<div style={{height:300,display:"flex",alignItems:"center",justifyContent:"center",background:"white",border:"1px solid #ddd"}}>
+          <div style={{textAlign:"center",color:"#aaa",fontSize:".77rem"}}>Type something to preview position on paper</div>
+        </div>}
+      </Card>
+    </div>
+
+    {gcode&&<Card title="G-code">
+      <div className="term" style={{maxHeight:220}}>
+        {gcode.split("\n").slice(0,40).map((ln,i)=>{
+          const col=ln.startsWith(";")?{color:"#374151"}:ln.match(/^G0|G28/)?{color:"#93c5fd"}:ln.match(/^G1/)?{color:"#86efac"}:ln.match(/^M[35]/)?{color:"#fbbf24"}:{color:"var(--ink)"};
+          return <div key={i} style={col}>{ln||" "}</div>;
+        })}
+        {gcode.split("\n").length>40&&<div style={{color:"#374151"}}>…{gcode.split("\n").length-40} more lines</div>}
+      </div>
+    </Card>}
+  </div>;
+}
+
+/* ── Scan & Print ── */
 function ScanPrint(){
   const [step,setStep]=useState(0);
   const [profiles,setProfiles]=useState([]);
@@ -384,13 +549,11 @@ function ScanPrint(){
     try{const r=await api.scanPreview(f,parseInt(dpi));setPrev(r);toast(`${r.word_count} words in ${r.line_count} lines`,"success");}
     catch(e){toast(e.message,"error");setStep(0)}setL(false);
   };
-
   const createJob=async()=>{
     if(!pid||!file)return;setL(true);
     try{const r=await api.createJobFromScan(pid,file,parseInt(dpi));setJob(r);setStep(2);toast("Job created","success");}
     catch(e){toast(e.message,"error")}setL(false);
   };
-
   const generate=async()=>{
     setL(true);
     try{
@@ -399,20 +562,16 @@ function ScanPrint(){
       setGcode(gc);setJob({...job,status:"ready"});setStep(3);toast("G-code ready","success");
     }catch(e){toast(e.message,"error")}setL(false);
   };
-
   const print=async()=>{
     setL(true);
     try{await api.printJob(job.job_id);setJob({...job,status:"done"});toast("Print job sent!","success");}
     catch(e){toast(e.message,"error")}setL(false);
   };
-
-  const dlGcode=()=>{
-    if(!gcode)return;
-    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([gcode],{type:"text/plain"}));a.download="handwriting.gcode";a.click();
+  const dl=()=>{
+    if(!gcode)return;const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([gcode],{type:"text/plain"}));a.download="handwriting.gcode";a.click();
   };
 
   const steps=["Upload","OCR Preview","Create Job","Print"];
-
   return <div className="fu">
     <div className="wiz">{steps.map((s,i)=><div key={i} className={`ws ${i===step?"on":i<step?"done":""}`}><span className="ws-n">Step {i+1}</span>{s}{i<step?" ✓":""}</div>)}</div>
     <div className="g2" style={{alignItems:"start"}}>
@@ -438,23 +597,20 @@ function ScanPrint(){
             {loading&&<div style={{marginTop:10}}><Sp/></div>}
           </div>
         </Card>
-
         {preview&&<Card title="OCR Results">
           <div className="g2" style={{marginBottom:14}}>
             <div className="stat" style={{padding:"11px 13px"}}><div className="sl">Words</div><div className="sv">{preview.word_count}</div></div>
             <div className="stat" style={{padding:"11px 13px"}}><div className="sl">Lines</div><div className="sv">{preview.line_count}</div></div>
           </div>
           <label className="lbl" style={{marginBottom:5}}>Detected text</label>
-          <div style={{background:"var(--s2)",border:"1px solid var(--border)",padding:"9px 11px",fontSize:".71rem",maxHeight:90,overflowY:"auto",lineHeight:1.7,color:"var(--dim)"}}>{preview.full_text||"No text"}</div>
+          <div style={{background:"var(--s2)",border:"1px solid var(--border)",padding:"9px 11px",fontSize:".71rem",maxHeight:80,overflowY:"auto",lineHeight:1.7,color:"var(--dim)"}}>{preview.full_text||"No text"}</div>
           <div style={{marginTop:12,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
             <button className="btn bp" disabled={!pid||loading} onClick={createJob}>{loading?<><Sp/>Creating…</>:"→ Create Job"}</button>
             {!pid&&<span style={{fontSize:".65rem",color:"var(--red)"}}>Select a profile first</span>}
           </div>
         </Card>}
-
         {job&&step>=2&&<Card title="Job">
           <div style={{fontSize:".71rem",lineHeight:2,color:"var(--dim)",marginBottom:12}}>
-            <div>ID: <span style={{color:"var(--amber)"}}>{job.job_id?.slice(0,8)}…</span></div>
             <div>Lines: <span style={{color:"var(--ink)"}}>{job.lines_detected}</span> · Words: <span style={{color:"var(--ink)"}}>{job.words_detected}</span></div>
             <div>Status: <Bud s={job.status}/></div>
           </div>
@@ -462,14 +618,13 @@ function ScanPrint(){
             <button className="btn bp" disabled={loading||job.status==="ready"||job.status==="done"} onClick={generate}>{loading?<><Sp/>Generating…</>:"⚙ Generate G-code"}</button>
             {(job.status==="ready"||job.status==="done")&&<>
               <button className="btn bg" disabled={loading||job.status==="done"} onClick={print}>{loading?<><Sp/>Sending…</>:"🖨 Print Now"}</button>
-              {gcode&&<button className="btn bgh" onClick={dlGcode}>⬇ .gcode</button>}
+              {gcode&&<button className="btn bgh" onClick={dl}>⬇ .gcode</button>}
             </>}
           </div>
         </Card>}
       </div>
-
       <Card title="Document preview" style={{padding:0}}>
-        <div style={{padding:"10px 16px 0",borderBottom:"1px solid var(--border)",marginBottom:0}}>
+        <div style={{padding:"10px 16px 0",borderBottom:"1px solid var(--border)"}}>
           <div className="ct" style={{margin:"0 0 10px"}}>Preview<span className="ct-line"/></div>
         </div>
         {imgUrl?<div className="scan-wrap">
@@ -480,28 +635,25 @@ function ScanPrint(){
         </div>}
       </Card>
     </div>
-
-    {gcode&&<Card title="G-code output">
-      <div className="term" style={{maxHeight:260}}>
-        {gcode.split("\n").slice(0,50).map((ln,i)=>{
+    {gcode&&<Card title="G-code">
+      <div className="term" style={{maxHeight:220}}>
+        {gcode.split("\n").slice(0,40).map((ln,i)=>{
           const col=ln.startsWith(";")?{color:"#374151"}:ln.match(/^G0|G28/)?{color:"#93c5fd"}:ln.match(/^G1/)?{color:"#86efac"}:ln.match(/^M[35]/)?{color:"#fbbf24"}:{color:"var(--ink)"};
           return <div key={i} style={col}>{ln||" "}</div>;
         })}
-        {gcode.split("\n").length>50&&<div style={{color:"#374151"}}>…{gcode.split("\n").length-50} more lines</div>}
+        {gcode.split("\n").length>40&&<div style={{color:"#374151"}}>…{gcode.split("\n").length-40} more lines</div>}
       </div>
     </Card>}
   </div>;
 }
 
-/* ════════════ JOBS ════════════ */
+/* ── Jobs ── */
 function Jobs(){
   const [jobs,setJ]=useState([]);
   const [loading,setL]=useState(true);
   const load=()=>{setL(true);api.listJobs().then(setJ).catch(()=>{}).finally(()=>setL(false))};
   useEffect(()=>{load()},[]);
-
   const dl=async id=>{try{const g=await api.getGcode(id);const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([g],{type:"text/plain"}));a.download=`job_${id.slice(0,8)}.gcode`;a.click();}catch(e){toast(e.message,"error")}};
-
   return <div className="fu">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:14}}>
       <span style={{fontSize:".71rem",color:"var(--dim)"}}>{jobs.length} jobs</span>
@@ -509,13 +661,12 @@ function Jobs(){
     </div>
     <Card>
       {loading?<Sp/>:<table className="tbl">
-        <thead><tr><th>ID</th><th>Preview</th><th>Blocks</th><th>Status</th><th>Date</th><th/></tr></thead>
+        <thead><tr><th>ID</th><th>Preview</th><th>Status</th><th>Date</th><th/></tr></thead>
         <tbody>
-          {jobs.length===0&&<tr><td colSpan={6} style={{textAlign:"center",padding:"32px 0",color:"var(--muted)"}}>No jobs yet</td></tr>}
+          {jobs.length===0&&<tr><td colSpan={5} style={{textAlign:"center",padding:"32px 0",color:"var(--muted)"}}>No jobs yet</td></tr>}
           {jobs.map(j=><tr key={j.id}>
             <td style={{fontSize:".62rem",color:"var(--dim)"}}>{j.id.slice(0,8)}…</td>
-            <td style={{maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.text_blocks?.[0]?.text?.slice(0,45)||"—"}</td>
-            <td style={{textAlign:"center"}}>{j.text_blocks?.length||0}</td>
+            <td style={{maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.text_blocks?.[0]?.text?.slice(0,45)||"—"}</td>
             <td><Bud s={j.status}/></td>
             <td style={{fontSize:".63rem",color:"var(--dim)"}}>{new Date(j.created_at).toLocaleString()}</td>
             <td><div style={{display:"flex",gap:5}}>
@@ -529,23 +680,20 @@ function Jobs(){
   </div>;
 }
 
-/* ════════════ ROBOT CONTROL ════════════ */
+/* ── Robot Control ── */
 function RobotControl({robot}){
   const [log,setLog]=useState(["// Console ready"]);
   const [raw,setRaw]=useState("G0 X10 Y10 F3000");
   const [busy,setBusy]=useState(false);
   const logRef=useRef();
-
-  const addLog=(msg,ok=true)=>{setLog(l=>[...l.slice(-80),`[${new Date().toLocaleTimeString()}] ${ok?"✓":"✗"} ${msg}`])};
+  const addLog=(msg,ok=true)=>setLog(l=>[...l.slice(-80),`[${new Date().toLocaleTimeString()}] ${ok?"✓":"✗"} ${msg}`]);
   useEffect(()=>{if(logRef.current)logRef.current.scrollTop=logRef.current.scrollHeight},[log]);
-
   const cmd=async(lbl,fn)=>{setBusy(true);addLog(`> ${lbl}`);try{const r=await fn();addLog(typeof r==="string"?r:JSON.stringify(r));}catch(e){addLog(e.message,false);toast(e.message,"error")}setBusy(false)};
   const ok=robot.state!=="disconnected";
-
   return <div className="fu">
     <div className="g2" style={{alignItems:"start"}}>
       <div>
-        <Card title="Robot state">
+        <Card title="State">
           <div style={{display:"flex",gap:20,marginBottom:18,flexWrap:"wrap"}}>
             <div><div className="sl">State</div><div style={{display:"flex",alignItems:"center",gap:8,marginTop:4}}>
               <div className={`dot ${ok?(robot.state==="idle"?"dot-on":"dot-busy"):"dot-off"}`}/>
@@ -582,10 +730,11 @@ function RobotControl({robot}){
   </div>;
 }
 
-/* ════════════ SHELL ════════════ */
+/* ── App Shell ── */
 const PAGES=[
   {id:"dashboard",label:"Dashboard",ic:"▦"},
   {id:"profiles",label:"Profiles",ic:"✎"},
+  {id:"type",label:"Type & Print",ic:"⌨"},
   {id:"scan",label:"Scan & Print",ic:"◈"},
   {id:"jobs",label:"All Jobs",ic:"≡"},
   {id:"robot",label:"Robot Control",ic:"⊕"},
@@ -593,14 +742,23 @@ const PAGES=[
 
 function App(){
   const [page,setPage]=useState("dashboard");
+  const [exiting,setExiting]=useState(false);
   const robot=useRobot();
   const cur=PAGES.find(p=>p.id===page);
   const stateColor=robot.state==="disconnected"?"var(--red)":robot.state==="idle"?"var(--green)":"var(--amber)";
+
+  const doExit=async()=>{
+    if(!confirm("Shut down the server?"))return;
+    setExiting(true);
+    try{await api.shutdown();}catch{}
+    toast("Server stopped. You can close this tab.","info");
+  };
 
   const renderPage=()=>{
     switch(page){
       case "dashboard": return <Dashboard robot={robot}/>;
       case "profiles":  return <Profiles/>;
+      case "type":      return <TypePrint/>;
       case "scan":      return <ScanPrint/>;
       case "jobs":      return <Jobs/>;
       case "robot":     return <RobotControl robot={robot}/>;
@@ -632,6 +790,9 @@ function App(){
             <div className="rp"><span className="rp-a">Y </span><span className="rp-v">{(robot.pos?.y||0).toFixed(1)}</span></div>
           </div>}
         </div>
+        <button className="exit-btn" onClick={doExit} disabled={exiting}>
+          {exiting?<><Sp/> Stopping…</>:<>⏻ Stop Server</>}
+        </button>
       </nav>
       <main className="main">
         <div className="topbar">
