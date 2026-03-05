@@ -29,7 +29,7 @@ sudo apt install tesseract-ocr -y
 
 ### 3. Download this project
 ```bash
-git clone https://github.com/YOUR_USERNAME/handwriting-robot.git
+git clone https://github.com/SupercoolPayloadGuy/handwriting-robot.git
 cd handwriting-robot
 ```
 
