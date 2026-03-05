@@ -55,6 +55,15 @@ def create_app() -> FastAPI:
         rs = await get_robot_status()
         return {"api": "ok", "robot": rs.get("state", "unknown")}
 
+    @app.post("/api/shutdown")
+    async def shutdown():
+        import asyncio, os, signal
+        async def _stop():
+            await asyncio.sleep(0.3)
+            os.kill(os.getpid(), signal.SIGTERM)
+        asyncio.create_task(_stop())
+        return {"message": "Shutting down…"}
+
     # Serve the frontend (index.html) at /
     @app.get("/")
     async def frontend():
