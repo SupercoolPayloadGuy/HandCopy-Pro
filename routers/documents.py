@@ -1,6 +1,7 @@
 import os, uuid, aiofiles
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import PlainTextResponse
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -31,6 +32,29 @@ async def scan_preview(file: UploadFile = File(...), dpi: int = 300):
         "text_blocks": [{"text": l["text"], "x_mm": l["x_mm"],
                          "y_mm": l["y_mm"], "max_width_mm": 170.0} for l in lines],
     }
+
+
+class TextJobRequest(BaseModel):
+    profile_id: str
+    text: str
+    x_mm: float = 20.0
+    y_mm: float = 20.0
+    max_width_mm: float = 170.0
+    char_height_mm: float = 5.0
+
+
+@router.post("/jobs/from-text")
+async def create_job_from_text(body: TextJobRequest, db: AsyncSession = Depends(get_db)):
+    """Create a print job directly from typed text — no scanning needed."""
+    pr = (await db.execute(select(HandwritingProfile).where(HandwritingProfile.id == body.profile_id))).scalar_one_or_none()
+    if not pr: raise HTTPException(404, "Profile not found")
+    if not body.text.strip(): raise HTTPException(400, "Text cannot be empty")
+
+    blocks = [{"text": body.text.strip(), "x_mm": body.x_mm, "y_mm": body.y_mm,
+               "max_width_mm": body.max_width_mm, "char_height_mm": body.char_height_mm}]
+    job = WritingJob(profile_id=body.profile_id, text_blocks=blocks, status=JobStatus.pending)
+    db.add(job); await db.flush()
+    return {"job_id": job.id, "status": job.status, "text": body.text.strip()}
 
 
 @router.post("/jobs/from-scan")
