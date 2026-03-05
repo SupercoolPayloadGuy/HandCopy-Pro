@@ -1,1 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Handwriting Robot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080a0d;--surface:#0e1117;--s2:#141b22;--s3:#1a2330;
+  --border:#1d2836;--b2:#243044;
+  --ink:#dde6f0;--dim:#637a94;--muted:#2d3f55;
+  --amber:#e8a020;--ag:rgba(232,160,32,.12);
+  --cyan:#38bdf8;--cg:rgba(56,189,248,.08);
+  --red:#f87171;--green:#4ade80;
+  --mono:'IBM Plex Mono',monospace;
+  --disp:'Barlow Condensed',sans-serif;
+  --serif:'Crimson Pro',serif;
+}
+html,body,#root{height:100%;background:var(--bg);color:var(--ink);font-family:var(--mono)}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(56,189,248,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.03) 1px,transparent 1px);
+  background-size:60px 60px;}
+#root{position:relative;z-index:1}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--b2)}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.fu{animation:fu .3s ease both}
+/* layout */
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.logo-name{font-family:var(--disp);font-size:1.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+.logo-sub{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-sec{font-size:.57rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:12px 20px 5px}
+.ni{display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:.74rem;color:var(--dim);text-align:left;transition:all .15s;position:relative}
+.ni:hover{color:var(--ink);background:var(--s2)}
+.ni.on{color:var(--amber);background:rgba(232,160,32,.06)}
+.ni.on::before{content:'';position:absolute;left:0;top:15%;bottom:15%;width:2px;background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.ni-ic{width:18px;text-align:center;font-size:.9rem;flex-shrink:0}
+.robot-box{margin:10px;border:1px solid var(--b2);background:var(--s2);padding:13px 15px}
+.rb-title{font-size:.57rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.rb-state{display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-on{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+.dot-off{background:var(--red)}
+.dot-busy{background:var(--amber);animation:pulse .7s infinite}
+.rb-name{font-family:var(--disp);font-size:1.1rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.rb-pos{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
+.rp{font-size:.63rem}.rp-a{color:var(--dim)}.rp-v{color:var(--amber);font-weight:600}
+/* main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;padding:0 30px;height:52px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.page-title{font-family:var(--disp);font-size:1.45rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.content{flex:1;overflow-y:auto;padding:26px 30px}
+/* card */
+.card{background:var(--surface);border:1px solid var(--border);padding:20px 22px;margin-bottom:16px;position:relative}
+.card::before,.card::after{content:'';position:absolute;width:14px;height:14px}
+.card::before{top:-1px;left:-1px;border-top:2px solid var(--amber);border-left:2px solid var(--amber)}
+.card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--amber);border-right:2px solid var(--amber)}
+.ct{font-family:var(--disp);font-size:.9rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.ct-line{flex:1;height:1px;background:linear-gradient(to right,var(--b2),transparent)}
+/* btn */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;cursor:pointer;border:1px solid;font-family:var(--mono);font-size:.71rem;letter-spacing:.06em;text-transform:uppercase;transition:all .15s;background:none}
+.btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.btn:active{transform:translateY(1px)}
+.bp{border-color:var(--amber);color:var(--amber)}.bp:hover{background:var(--ag)}
+.bc{border-color:var(--cyan);color:var(--cyan)}.bc:hover{background:var(--cg)}
+.br{border-color:var(--red);color:var(--red)}.br:hover{background:rgba(248,113,113,.1)}
+.bg{border-color:var(--green);color:var(--green)}.bg:hover{background:rgba(74,222,128,.08)}
+.bgh{border-color:var(--b2);color:var(--dim)}.bgh:hover{border-color:var(--dim);color:var(--ink)}
+.sm{padding:5px 11px;font-size:.65rem}
+/* field */
+.fl{margin-bottom:14px}
+.lbl{display:block;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.inp{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--ink);font-family:var(--mono);font-size:.77rem;padding:9px 12px;outline:none;transition:border .15s}
+.inp:focus{border-color:var(--amber);box-shadow:0 0 0 1px rgba(232,160,32,.15)}
+.inp::placeholder{color:var(--muted)}
+select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23637a94'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:28px}
+/* spinner */
+.sp{width:13px;height:13px;border:2px solid var(--b2);border-top-color:var(--amber);border-radius:50%;animation:spin .55s linear infinite;display:inline-block;flex-shrink:0}
+/* badge */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;font-size:.59rem;letter-spacing:.07em;text-transform:uppercase;border:1px solid}
+.ba{border-color:rgba(232,160,32,.4);color:var(--amber);background:rgba(232,160,32,.08)}
+.bg2{border-color:rgba(74,222,128,.35);color:var(--green);background:rgba(74,222,128,.07)}
+.br2{border-color:rgba(248,113,113,.35);color:var(--red);background:rgba(248,113,113,.07)}
+.bc2{border-color:rgba(56,189,248,.35);color:var(--cyan);background:rgba(56,189,248,.07)}
+.bm{border-color:var(--b2);color:var(--dim);background:var(--s2)}
+/* alert */
+.alert{padding:11px 14px;font-size:.73rem;line-height:1.6;margin-bottom:14px;border-left:3px solid;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ae{border-color:var(--red);background:rgba(248,113,113,.07);color:#fca5a5}
+.as{border-color:var(--green);background:rgba(74,222,128,.07);color:#86efac}
+.ai{border-color:var(--cyan);background:var(--cg);color:#7dd3fc}
+.aw{border-color:var(--amber);background:var(--ag);color:#fcd34d}
+/* grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+/* stat */
+.stat{background:var(--s2);border:1px solid var(--border);padding:14px 16px}
+.sl{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.sv{font-family:var(--disp);font-size:2rem;font-weight:700;color:var(--amber);line-height:1}
+.ss{font-size:.63rem;color:var(--muted);margin-top:3px}
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:.72rem}
+.tbl th{padding:7px 12px;text-align:left;font-size:.59rem;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--b2);font-weight:400}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:var(--s2)}
+/* dropzone */
+.dz{border:1px dashed var(--b2);padding:34px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.dz:hover,.dz.drag{border-color:var(--amber);background:var(--ag)}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-ico{font-size:2.2rem;display:block;margin-bottom:9px}
+.dz-t{font-family:var(--disp);font-size:.95rem;font-weight:600;letter-spacing:.05em;color:var(--ink);margin-bottom:3px}
+.dz-s{font-size:.67rem;color:var(--dim)}
+/* terminal */
+.term{background:#000810;border:1px solid var(--b2);font-family:var(--mono);font-size:.69rem;line-height:1.75;padding:14px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+/* glyph grid */
+.gg{display:flex;flex-wrap:wrap;gap:5px}
+.gc{width:38px;height:38px;border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:.85rem;cursor:pointer;transition:all .15s;background:var(--s2);color:var(--dim);position:relative}
+.gc:hover{border-color:var(--dim);color:var(--ink)}
+.gc.has{border-color:var(--amber);color:var(--amber);background:rgba(232,160,32,.06)}
+.gc.sel{border-color:var(--cyan);color:var(--cyan);background:rgba(56,189,248,.08)}
+.gc-dot{position:absolute;bottom:2px;right:2px;width:4px;height:4px;background:var(--amber);border-radius:50%}
+/* wizard */
+.wiz{display:flex;gap:3px;margin-bottom:22px}
+.ws{flex:1;padding:9px 10px;text-align:center;font-size:.63rem;letter-spacing:.05em;text-transform:uppercase;background:var(--s2);border:1px solid var(--b2);transition:all .2s}
+.ws.on{border-color:var(--amber);color:var(--amber);background:rgba(232,160,32,.06)}
+.ws.done{border-color:var(--green);color:var(--green);background:rgba(74,222,128,.05)}
+.ws-n{display:block;font-size:.54rem;color:var(--muted);margin-bottom:2px}
+/* profile card */
+.pc{padding:12px 14px;border:1px solid var(--b2);cursor:pointer;transition:all .15s;margin-bottom:7px;position:relative}
+.pc:hover{background:var(--s2)}
+.pc.sel{border-color:var(--amber);background:rgba(232,160,32,.04)}
+.pc.sel::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--amber)}
+/* controls */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ctrl{padding:18px 14px;border:1px solid var(--b2);background:var(--s2);cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:7px}
+.ctrl:hover{border-color:var(--amber);background:rgba(232,160,32,.05)}
+.ctrl.red:hover{border-color:var(--red);background:rgba(248,113,113,.05)}
+.ctrl-ic{font-size:1.7rem}.ctrl-l{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+/* scan preview */
+.scan-wrap{position:relative;background:#e8e0cc;overflow:hidden}
+.scan-wrap img{width:100%;display:block;max-height:480px;object-fit:contain}
+.ocr-box{position:absolute;background:rgba(232,160,32,.18);border:1px solid rgba(232,160,32,.8);cursor:pointer}
+.ocr-box:hover{background:rgba(232,160,32,.38)}
+.ocr-lbl{position:absolute;top:-15px;left:0;white-space:nowrap;font-size:8px;font-family:var(--mono);background:rgba(0,0,0,.85);color:var(--amber);padding:1px 4px;pointer-events:none;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+/* divider */
+.div{height:1px;background:var(--border);margin:16px 0}
+/* toast */
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--surface);border:1px solid var(--b2);padding:13px 16px;font-size:.73rem;min-width:250px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:fu .25s ease;display:flex;align-items:flex-start;gap:9px}
+.toast.s{border-left:3px solid var(--green)}.toast.e{border-left:3px solid var(--red)}.toast.i{border-left:3px solid var(--cyan)}
+@media(max-width:760px){.sidebar{display:none}.g2,.g3,.g4{grid-template-columns:1fr}.wiz{flex-direction:column}.content{padding:16px 14px}}
+</style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
 
+/* ── API (always same origin /api/...) ── */
+const api = (() => {
+  const base = "/api";
+  const j = async (path, opts={}) => {
+    const r = await fetch(base+path, {...opts, headers:{"Content-Type":"application/json",...(opts.headers||{})}});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||`Error ${r.status}`);}
+    if(r.status===204) return null;
+    return r.json();
+  };
+  const u = async (path,fd) => {
+    const r = await fetch(base+path,{method:"POST",body:fd});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||`Error ${r.status}`);}
+    return r.json();
+  };
+  return {
+    health:()=>j("/health"),
+    listProfiles:()=>j("/profiles/"),
+    createProfile:d=>j("/profiles/",{method:"POST",body:JSON.stringify(d)}),
+    updateProfile:(id,d)=>j(`/profiles/${id}`,{method:"PATCH",body:JSON.stringify(d)}),
+    deleteProfile:id=>j(`/profiles/${id}`,{method:"DELETE"}).catch(()=>null),
+    listGlyphs:id=>j(`/profiles/${id}/glyphs`),
+    uploadGlyph:(pid,char,file)=>{const fd=new FormData();fd.append("file",file);return u(`/profiles/${pid}/glyphs/upload-image?character=${encodeURIComponent(char)}`,fd)},
+    analyzeSample:(pid,file)=>{const fd=new FormData();fd.append("file",file);return u(`/profiles/${pid}/analyze-sample`,fd)},
+    scanPreview:(file,dpi)=>{const fd=new FormData();fd.append("file",file);return u(`/documents/scan-preview?dpi=${dpi}`,fd)},
+    createJobFromScan:(pid,file,dpi)=>{const fd=new FormData();fd.append("file",file);return u(`/documents/jobs/from-scan?profile_id=${pid}&dpi=${dpi}`,fd)},
+    listJobs:()=>j("/documents/jobs"),
+    generateGcode:id=>j(`/documents/jobs/${id}/generate`,{method:"POST"}),
+    printJob:id=>j(`/documents/jobs/${id}/print`,{method:"POST"}),
+    getGcode:id=>fetch(base+`/documents/jobs/${id}/gcode`).then(r=>r.text()),
+    deleteJob:id=>j(`/documents/jobs/${id}`,{method:"DELETE"}).catch(()=>null),
+    robotStatus:()=>j("/robot/status"),
+    robotHome:()=>j("/robot/home",{method:"POST"}),
+    robotStop:()=>j("/robot/stop",{method:"POST"}),
+    robotPause:()=>j("/robot/pause",{method:"POST"}),
+    robotResume:()=>j("/robot/resume",{method:"POST"}),
+    sendRaw:g=>j("/robot/send-raw",{method:"POST",body:JSON.stringify({gcode:g})}),
+  };
+})();
+
+/* ── Toast ── */
+let _setToast=null;
+function ToastHost(){
+  const [t,set]=useState(null);
+  useEffect(()=>{_setToast=set;return()=>{_setToast=null}},[]);
+  useEffect(()=>{if(t){const h=setTimeout(()=>set(null),3400);return()=>clearTimeout(h)}},[t]);
+  if(!t) return null;
+  return <div className={`toast ${t.type[0]}`}><span>{t.type==="success"?"✓":t.type==="error"?"✕":"ℹ"}</span><span>{t.msg}</span></div>;
+}
+const toast=(msg,type="info")=>{if(_setToast)_setToast({msg,type})};
+
+/* ── Helpers ── */
+const Sp=()=><span className="sp"/>;
+function Bud({s}){const m={pending:"bm",generating:"ba",ready:"bc2",printing:"ba",done:"bg2",error:"br2",disconnected:"br2"};return <span className={`badge ${m[s]||"bm"}`}>{s}</span>}
+function Alrt({type="i",children,onClose}){return <div className={`alert a${type}`}><span>{children}</span>{onClose&&<button onClick={onClose} style={{background:"none",border:"none",color:"inherit",cursor:"pointer",opacity:.6}}>✕</button>}</div>}
+function Card({title,children,style}){return <div className="card" style={style}><div className="card-c"/><div className="card-cr"/>{title&&<div className="ct">{title}<span className="ct-line"/></div>}{children}</div>}
+
+/* ── Robot status hook ── */
+function useRobot(){
+  const [s,set]=useState({state:"disconnected",pos:{x:0,y:0}});
+  useEffect(()=>{
+    let alive=true;
+    const poll=async()=>{try{const r=await api.robotStatus();if(alive)set(r);}catch{if(alive)set({state:"disconnected",pos:{x:0,y:0}})}};
+    poll();const t=setInterval(poll,4000);return()=>{alive=false;clearInterval(t)};
+  },[]);
+  return s;
+}
+
+/* ════════════ DASHBOARD ════════════ */
+function Dashboard({robot}){
+  const [d,setD]=useState({jobs:[],profiles:[]});
+  const [loading,setL]=useState(true);
+  useEffect(()=>{Promise.all([api.listJobs().catch(()=>[]),api.listProfiles().catch(()=>[])]).then(([j,p])=>setD({jobs:j,profiles:p})).finally(()=>setL(false))},[]);
+  const ok=robot.state!=="disconnected";
+  return <div className="fu">
+    <div className="g4" style={{marginBottom:20}}>
+      <div className="stat"><div className="sl">Robot</div><div className="sv" style={{fontSize:"1.2rem",color:ok?"var(--green)":"var(--red)",textTransform:"uppercase"}}>{robot.state}</div><div className="ss">{ok?`X${(robot.pos?.x||0).toFixed(1)} Y${(robot.pos?.y||0).toFixed(1)} mm`:"Not connected"}</div></div>
+      <div className="stat"><div className="sl">Profiles</div><div className="sv">{d.profiles.length}</div><div className="ss">Handwriting styles</div></div>
+      <div className="stat"><div className="sl">Jobs Done</div><div className="sv">{d.jobs.filter(j=>j.status==="done").length}</div><div className="ss">of {d.jobs.length} total</div></div>
+      <div className="stat"><div className="sl">Glyphs</div><div className="sv">{d.profiles.reduce((a,p)=>a+(p.glyph_count||0),0)}</div><div className="ss">Characters stored</div></div>
+    </div>
+    <div className="g2">
+      <Card title="How to use">
+        <div style={{fontFamily:"var(--serif)",fontSize:"1rem",lineHeight:2,color:"var(--dim)"}}>
+          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>01 —</span> Go to <b style={{color:"var(--ink)"}}>Profiles</b>, create a handwriting style</div>
+          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>02 —</span> Upload a photo of each letter (A–Z etc.)</div>
+          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>03 —</span> <b style={{color:"var(--ink)"}}>Scan & Print</b> → upload your document</div>
+          <div><span style={{color:"var(--amber)",fontFamily:"var(--mono)",fontSize:".7rem"}}>04 —</span> Generate G-code → click <b style={{color:"var(--ink)"}}>Print</b></div>
+        </div>
+      </Card>
+      <Card title="Recent jobs">
+        {loading?<Sp/>:d.jobs.length===0?<p style={{fontSize:".77rem",color:"var(--muted)"}}>No jobs yet.</p>:
+        <table className="tbl"><thead><tr><th>Preview</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>{d.jobs.slice(0,6).map(j=><tr key={j.id}>
+            <td style={{maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.text_blocks?.[0]?.text?.slice(0,40)||"—"}</td>
+            <td><Bud s={j.status}/></td>
+            <td style={{fontSize:".64rem",color:"var(--dim)"}}>{new Date(j.created_at).toLocaleDateString()}</td>
+          </tr>)}</tbody>
+        </table>}
+      </Card>
+    </div>
+  </div>;
+}
+
+/* ════════════ PROFILES ════════════ */
+function Profiles(){
+  const [profiles,setP]=useState([]);
+  const [sel,setSel]=useState(null);
+  const [glyphs,setG]=useState([]);
+  const [loading,setL]=useState(true);
+  const [creating,setC]=useState(false);
+  const [form,setF]=useState({name:"",description:""});
+  const [upChar,setUC]=useState("");
+  const [busy,setB]=useState(false);
+  const gRef=useRef(),sRef=useRef();
+  const CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!? ".split("");
+
+  const load=()=>api.listProfiles().then(setP).catch(()=>{}).finally(()=>setL(false));
+  useEffect(()=>{load()},[]);
+
+  const pickProfile=async p=>{setSel(p);setG([]);try{setG(await api.listGlyphs(p.id))}catch{}};
+  const hasGlyph=c=>glyphs.some(g=>g.character===c);
+
+  const doCreate=async()=>{
+    if(!form.name.trim())return;
+    try{await api.createProfile(form);setF({name:"",description:""});setC(false);toast("Profile created","success");load();}
+    catch(e){toast(e.message,"error")}
+  };
+
+  const doDel=async id=>{
+    if(!confirm("Delete profile and all its glyphs?"))return;
+    await api.deleteProfile(id);if(sel?.id===id)setSel(null);load();
+  };
+
+  const uploadGlyph=async file=>{
+    if(!upChar||!sel)return;setB(true);
+    try{const r=await api.uploadGlyph(sel.id,upChar,file);toast(`'${upChar}' saved — ${r.stroke_count} strokes`,"success");setUC("");pickProfile(sel);}
+    catch(e){toast(e.message,"error")}setB(false);
+  };
+
+  const doAnalyze=async file=>{
+    if(!sel)return;setB(true);
+    try{const r=await api.analyzeSample(sel.id,file);toast(`Slant ${r.measured.slant_deg}°, waver ${r.measured.baseline_waver}mm`,"success");load();}
+    catch(e){toast(e.message,"error")}setB(false);
+  };
+
+  return <div className="fu">
+    <div className="g2" style={{alignItems:"start"}}>
+      <Card title="Profiles">
+        {loading?<Sp/>:<>
+          {profiles.length===0&&<p style={{fontSize:".76rem",color:"var(--muted)",marginBottom:14}}>No profiles yet.</p>}
+          {profiles.map(p=><div key={p.id} className={`pc ${sel?.id===p.id?"sel":""}`} onClick={()=>pickProfile(p)}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div>
+                <div style={{fontFamily:"var(--disp)",fontSize:"1rem",fontWeight:600,letterSpacing:".04em"}}>{p.name}</div>
+                <div style={{fontSize:".63rem",color:"var(--muted)",marginTop:3}}>{p.glyph_count} glyphs · slant {p.slant_deg}°</div>
+              </div>
+              <button className="btn br sm" onClick={e=>{e.stopPropagation();doDel(p.id)}}>✕</button>
+            </div>
+          </div>)}
+          {creating?<div style={{padding:14,background:"var(--s2)",border:"1px solid var(--b2)",marginTop:8}}>
+            <div className="fl"><label className="lbl">Name</label><input className="inp" value={form.name} onChange={e=>setF({...form,name:e.target.value})} placeholder="e.g. Emma's handwriting"/></div>
+            <div className="fl"><label className="lbl">Notes</label><input className="inp" value={form.description} onChange={e=>setF({...form,description:e.target.value})} placeholder="Cursive, blue pen..."/></div>
+            <div style={{display:"flex",gap:8}}><button className="btn bp" onClick={doCreate}>Create</button><button className="btn bgh" onClick={()=>setC(false)}>Cancel</button></div>
+          </div>:<button className="btn bp" style={{marginTop:10,width:"100%"}} onClick={()=>setC(true)}>+ New Profile</button>}
+        </>}
+      </Card>
+
+      {sel?<Card title={`Glyphs — ${sel.name}`}>
+        <p style={{fontSize:".68rem",color:"var(--dim)",lineHeight:1.7,marginBottom:12}}><span style={{color:"var(--amber)"}}>Amber</span> = stored · <span style={{color:"var(--cyan)"}}>Cyan</span> = selected for upload. Click a character then upload its image.</p>
+        <div className="gg" style={{marginBottom:14}}>
+          {CHARS.map(c=><div key={c} className={`gc ${hasGlyph(c)?"has":""} ${upChar===c?"sel":""}`} onClick={()=>setUC(upChar===c?"":c)} title={c===" "?"Space":c}>
+            {c===" "?"·":c}{hasGlyph(c)&&<span className="gc-dot"/>}
+          </div>)}
+        </div>
+        <div className="div"/>
+        <div className="lbl" style={{marginBottom:8}}>Upload character image</div>
+        <div style={{display:"flex",gap:9,alignItems:"flex-end",marginBottom:12}}>
+          <div style={{width:64}}>
+            <label className="lbl">Char</label>
+            <input className="inp" style={{textAlign:"center",fontSize:"1.1rem",padding:"6px"}} value={upChar} maxLength={1} onChange={e=>setUC(e.target.value)} placeholder="a"/>
+          </div>
+          <div style={{flex:1}}>
+            <label className="lbl">Cropped image (white background)</label>
+            <input ref={gRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>e.target.files[0]&&uploadGlyph(e.target.files[0])}/>
+            <button className="btn bp" style={{width:"100%"}} disabled={!upChar||busy} onClick={()=>gRef.current.click()}>{busy?<><Sp/> Extracting…</>:"📁 Choose image"}</button>
+          </div>
+        </div>
+        <div className="div"/>
+        <label className="lbl" style={{marginBottom:6}}>Auto-measure style from full sample</label>
+        <p style={{fontSize:".65rem",color:"var(--muted)",marginBottom:9}}>Upload a photo of a full handwritten page → auto-detects slant and baseline wobble.</p>
+        <input ref={sRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>e.target.files[0]&&doAnalyze(e.target.files[0])}/>
+        <button className="btn bc" disabled={busy} onClick={()=>sRef.current.click()}>{busy?<><Sp/> Analyzing…</>:"🔍 Analyze sample"}</button>
+      </Card>:<Card><div style={{textAlign:"center",padding:"36px 0",color:"var(--muted)",fontSize:".77rem"}}>← Select a profile</div></Card>}
+    </div>
+  </div>;
+}
+
+/* ════════════ SCAN & PRINT ════════════ */
+function ScanPrint(){
+  const [step,setStep]=useState(0);
+  const [profiles,setProfiles]=useState([]);
+  const [pid,setPid]=useState("");
+  const [dpi,setDpi]=useState("300");
+  const [file,setFile]=useState(null);
+  const [imgUrl,setImgUrl]=useState(null);
+  const [preview,setPrev]=useState(null);
+  const [job,setJob]=useState(null);
+  const [gcode,setGcode]=useState("");
+  const [loading,setL]=useState(false);
+  const [drag,setDrag]=useState(false);
+  const fRef=useRef();
+
+  useEffect(()=>{api.listProfiles().then(setProfiles).catch(()=>{})},[]);
+
+  const handleFile=async f=>{
+    setFile(f);setImgUrl(URL.createObjectURL(f));setPrev(null);setJob(null);setGcode("");setStep(1);setL(true);
+    try{const r=await api.scanPreview(f,parseInt(dpi));setPrev(r);toast(`${r.word_count} words in ${r.line_count} lines`,"success");}
+    catch(e){toast(e.message,"error");setStep(0)}setL(false);
+  };
+
+  const createJob=async()=>{
+    if(!pid||!file)return;setL(true);
+    try{const r=await api.createJobFromScan(pid,file,parseInt(dpi));setJob(r);setStep(2);toast("Job created","success");}
+    catch(e){toast(e.message,"error")}setL(false);
+  };
+
+  const generate=async()=>{
+    setL(true);
+    try{
+      await api.generateGcode(job.job_id);
+      const gc=await api.getGcode(job.job_id);
+      setGcode(gc);setJob({...job,status:"ready"});setStep(3);toast("G-code ready","success");
+    }catch(e){toast(e.message,"error")}setL(false);
+  };
+
+  const print=async()=>{
+    setL(true);
+    try{await api.printJob(job.job_id);setJob({...job,status:"done"});toast("Print job sent!","success");}
+    catch(e){toast(e.message,"error")}setL(false);
+  };
+
+  const dlGcode=()=>{
+    if(!gcode)return;
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([gcode],{type:"text/plain"}));a.download="handwriting.gcode";a.click();
+  };
+
+  const steps=["Upload","OCR Preview","Create Job","Print"];
+
+  return <div className="fu">
+    <div className="wiz">{steps.map((s,i)=><div key={i} className={`ws ${i===step?"on":i<step?"done":""}`}><span className="ws-n">Step {i+1}</span>{s}{i<step?" ✓":""}</div>)}</div>
+    <div className="g2" style={{alignItems:"start"}}>
+      <div>
+        <Card title="Setup">
+          <div className="fl"><label className="lbl">Handwriting Profile</label>
+            <select className="inp" value={pid} onChange={e=>setPid(e.target.value)}>
+              <option value="">— Choose profile —</option>
+              {profiles.map(p=><option key={p.id} value={p.id}>{p.name} ({p.glyph_count} glyphs)</option>)}
+            </select>
+          </div>
+          <div className="fl"><label className="lbl">Scan DPI</label>
+            <select className="inp" value={dpi} onChange={e=>setDpi(e.target.value)}>
+              {["150","200","300","400","600"].map(d=><option key={d}>{d} DPI</option>)}
+            </select>
+          </div>
+          <input ref={fRef} type="file" accept="image/*,.pdf" style={{display:"none"}} onChange={e=>e.target.files[0]&&handleFile(e.target.files[0])}/>
+          <div className={`dz ${drag?"drag":""}`} onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);const f=e.dataTransfer.files[0];if(f)handleFile(f)}}>
+            <input type="file" accept="image/*,.pdf" onChange={e=>e.target.files[0]&&handleFile(e.target.files[0])}/>
+            <span className="dz-ico">{loading?"⏳":"📄"}</span>
+            <div className="dz-t">{loading?"Running OCR…":"Drop document scan here"}</div>
+            <div className="dz-s">JPEG · PNG · TIFF · PDF — or click to browse</div>
+            {loading&&<div style={{marginTop:10}}><Sp/></div>}
+          </div>
+        </Card>
+
+        {preview&&<Card title="OCR Results">
+          <div className="g2" style={{marginBottom:14}}>
+            <div className="stat" style={{padding:"11px 13px"}}><div className="sl">Words</div><div className="sv">{preview.word_count}</div></div>
+            <div className="stat" style={{padding:"11px 13px"}}><div className="sl">Lines</div><div className="sv">{preview.line_count}</div></div>
+          </div>
+          <label className="lbl" style={{marginBottom:5}}>Detected text</label>
+          <div style={{background:"var(--s2)",border:"1px solid var(--border)",padding:"9px 11px",fontSize:".71rem",maxHeight:90,overflowY:"auto",lineHeight:1.7,color:"var(--dim)"}}>{preview.full_text||"No text"}</div>
+          <div style={{marginTop:12,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+            <button className="btn bp" disabled={!pid||loading} onClick={createJob}>{loading?<><Sp/>Creating…</>:"→ Create Job"}</button>
+            {!pid&&<span style={{fontSize:".65rem",color:"var(--red)"}}>Select a profile first</span>}
+          </div>
+        </Card>}
+
+        {job&&step>=2&&<Card title="Job">
+          <div style={{fontSize:".71rem",lineHeight:2,color:"var(--dim)",marginBottom:12}}>
+            <div>ID: <span style={{color:"var(--amber)"}}>{job.job_id?.slice(0,8)}…</span></div>
+            <div>Lines: <span style={{color:"var(--ink)"}}>{job.lines_detected}</span> · Words: <span style={{color:"var(--ink)"}}>{job.words_detected}</span></div>
+            <div>Status: <Bud s={job.status}/></div>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <button className="btn bp" disabled={loading||job.status==="ready"||job.status==="done"} onClick={generate}>{loading?<><Sp/>Generating…</>:"⚙ Generate G-code"}</button>
+            {(job.status==="ready"||job.status==="done")&&<>
+              <button className="btn bg" disabled={loading||job.status==="done"} onClick={print}>{loading?<><Sp/>Sending…</>:"🖨 Print Now"}</button>
+              {gcode&&<button className="btn bgh" onClick={dlGcode}>⬇ .gcode</button>}
+            </>}
+          </div>
+        </Card>}
+      </div>
+
+      <Card title="Document preview" style={{padding:0}}>
+        <div style={{padding:"10px 16px 0",borderBottom:"1px solid var(--border)",marginBottom:0}}>
+          <div className="ct" style={{margin:"0 0 10px"}}>Preview<span className="ct-line"/></div>
+        </div>
+        {imgUrl?<div className="scan-wrap">
+          <img src={imgUrl} alt="Document"/>
+          {preview?.text_blocks?.map((b,i)=><div key={i} className="ocr-box" style={{left:(b.x_mm/210*100)+"%",top:(b.y_mm/297*100)+"%"}} title={b.text}><div className="ocr-lbl">{b.text}</div></div>)}
+        </div>:<div style={{height:380,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{textAlign:"center",color:"var(--muted)",fontSize:".76rem"}}><div style={{fontSize:"2.5rem",marginBottom:10}}>📄</div>Upload a document scan</div>
+        </div>}
+      </Card>
+    </div>
+
+    {gcode&&<Card title="G-code output">
+      <div className="term" style={{maxHeight:260}}>
+        {gcode.split("\n").slice(0,50).map((ln,i)=>{
+          const col=ln.startsWith(";")?{color:"#374151"}:ln.match(/^G0|G28/)?{color:"#93c5fd"}:ln.match(/^G1/)?{color:"#86efac"}:ln.match(/^M[35]/)?{color:"#fbbf24"}:{color:"var(--ink)"};
+          return <div key={i} style={col}>{ln||" "}</div>;
+        })}
+        {gcode.split("\n").length>50&&<div style={{color:"#374151"}}>…{gcode.split("\n").length-50} more lines</div>}
+      </div>
+    </Card>}
+  </div>;
+}
+
+/* ════════════ JOBS ════════════ */
+function Jobs(){
+  const [jobs,setJ]=useState([]);
+  const [loading,setL]=useState(true);
+  const load=()=>{setL(true);api.listJobs().then(setJ).catch(()=>{}).finally(()=>setL(false))};
+  useEffect(()=>{load()},[]);
+
+  const dl=async id=>{try{const g=await api.getGcode(id);const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([g],{type:"text/plain"}));a.download=`job_${id.slice(0,8)}.gcode`;a.click();}catch(e){toast(e.message,"error")}};
+
+  return <div className="fu">
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:14}}>
+      <span style={{fontSize:".71rem",color:"var(--dim)"}}>{jobs.length} jobs</span>
+      <button className="btn bgh sm" onClick={load}>↻ Refresh</button>
+    </div>
+    <Card>
+      {loading?<Sp/>:<table className="tbl">
+        <thead><tr><th>ID</th><th>Preview</th><th>Blocks</th><th>Status</th><th>Date</th><th/></tr></thead>
+        <tbody>
+          {jobs.length===0&&<tr><td colSpan={6} style={{textAlign:"center",padding:"32px 0",color:"var(--muted)"}}>No jobs yet</td></tr>}
+          {jobs.map(j=><tr key={j.id}>
+            <td style={{fontSize:".62rem",color:"var(--dim)"}}>{j.id.slice(0,8)}…</td>
+            <td style={{maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.text_blocks?.[0]?.text?.slice(0,45)||"—"}</td>
+            <td style={{textAlign:"center"}}>{j.text_blocks?.length||0}</td>
+            <td><Bud s={j.status}/></td>
+            <td style={{fontSize:".63rem",color:"var(--dim)"}}>{new Date(j.created_at).toLocaleString()}</td>
+            <td><div style={{display:"flex",gap:5}}>
+              {j.gcode&&<button className="btn bgh sm" onClick={()=>dl(j.id)}>⬇</button>}
+              <button className="btn br sm" onClick={async()=>{if(!confirm("Delete?"))return;await api.deleteJob(j.id);load()}}>✕</button>
+            </div></td>
+          </tr>)}
+        </tbody>
+      </table>}
+    </Card>
+  </div>;
+}
+
+/* ════════════ ROBOT CONTROL ════════════ */
+function RobotControl({robot}){
+  const [log,setLog]=useState(["// Console ready"]);
+  const [raw,setRaw]=useState("G0 X10 Y10 F3000");
+  const [busy,setBusy]=useState(false);
+  const logRef=useRef();
+
+  const addLog=(msg,ok=true)=>{setLog(l=>[...l.slice(-80),`[${new Date().toLocaleTimeString()}] ${ok?"✓":"✗"} ${msg}`])};
+  useEffect(()=>{if(logRef.current)logRef.current.scrollTop=logRef.current.scrollHeight},[log]);
+
+  const cmd=async(lbl,fn)=>{setBusy(true);addLog(`> ${lbl}`);try{const r=await fn();addLog(typeof r==="string"?r:JSON.stringify(r));}catch(e){addLog(e.message,false);toast(e.message,"error")}setBusy(false)};
+  const ok=robot.state!=="disconnected";
+
+  return <div className="fu">
+    <div className="g2" style={{alignItems:"start"}}>
+      <div>
+        <Card title="Robot state">
+          <div style={{display:"flex",gap:20,marginBottom:18,flexWrap:"wrap"}}>
+            <div><div className="sl">State</div><div style={{display:"flex",alignItems:"center",gap:8,marginTop:4}}>
+              <div className={`dot ${ok?(robot.state==="idle"?"dot-on":"dot-busy"):"dot-off"}`}/>
+              <span style={{fontFamily:"var(--disp)",fontSize:"1.4rem",fontWeight:600,textTransform:"uppercase",color:ok?"var(--green)":"var(--red)"}}>{robot.state}</span>
+            </div></div>
+            <div><div className="sl">Position</div><div style={{fontFamily:"var(--mono)",fontSize:".82rem",marginTop:4}}>
+              X <span style={{color:"var(--amber)",fontWeight:600}}>{(robot.pos?.x||0).toFixed(2)}</span> &nbsp;·&nbsp; Y <span style={{color:"var(--amber)",fontWeight:600}}>{(robot.pos?.y||0).toFixed(2)}</span> <span style={{fontSize:".67rem",color:"var(--muted)"}}>mm</span>
+            </div></div>
+          </div>
+          <div className="cg">
+            <button className="ctrl" disabled={busy} onClick={()=>cmd("Home (G28)",()=>api.robotHome())}><span className="ctrl-ic">⌂</span><span className="ctrl-l">Home</span></button>
+            <button className="ctrl red" disabled={busy} onClick={()=>cmd("STOP",()=>api.robotStop())}><span className="ctrl-ic" style={{color:"var(--red)"}}>⛔</span><span className="ctrl-l" style={{color:"var(--red)"}}>Stop</span></button>
+            <button className="ctrl" disabled={busy} onClick={()=>cmd("Pause",()=>api.robotPause())}><span className="ctrl-ic">⏸</span><span className="ctrl-l">Pause</span></button>
+            <button className="ctrl" disabled={busy} onClick={()=>cmd("Resume",()=>api.robotResume())}><span className="ctrl-ic">▶</span><span className="ctrl-l">Resume</span></button>
+          </div>
+        </Card>
+        <Card title="Manual G-code">
+          <div style={{display:"flex",gap:8}}>
+            <input className="inp" style={{flex:1}} value={raw} onChange={e=>setRaw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&cmd(raw,()=>api.sendRaw(raw))} placeholder="G0 X10 Y10 F3000"/>
+            <button className="btn bp" disabled={busy} onClick={()=>cmd(raw,()=>api.sendRaw(raw))}>{busy?<Sp/>:"Send"}</button>
+          </div>
+          <div style={{marginTop:9,fontSize:".63rem",color:"var(--muted)",lineHeight:1.8}}>
+            Common: <code>G28</code> home · <code>G0 X0 Y0</code> origin · <code>M3</code> pen↓ · <code>M5</code> pen↑
+          </div>
+        </Card>
+      </div>
+      <Card title="Console">
+        <div ref={logRef} className="term" style={{height:430}}>
+          {log.map((l,i)=><div key={i} style={{color:l.includes("✗")?"var(--red)":l.includes(">")?"var(--amber)":"#86efac"}}>{l}</div>)}
+        </div>
+        <button className="btn bgh sm" style={{marginTop:7}} onClick={()=>setLog(["// Cleared"])}>Clear</button>
+      </Card>
+    </div>
+  </div>;
+}
+
+/* ════════════ SHELL ════════════ */
+const PAGES=[
+  {id:"dashboard",label:"Dashboard",ic:"▦"},
+  {id:"profiles",label:"Profiles",ic:"✎"},
+  {id:"scan",label:"Scan & Print",ic:"◈"},
+  {id:"jobs",label:"All Jobs",ic:"≡"},
+  {id:"robot",label:"Robot Control",ic:"⊕"},
+];
+
+function App(){
+  const [page,setPage]=useState("dashboard");
+  const robot=useRobot();
+  const cur=PAGES.find(p=>p.id===page);
+  const stateColor=robot.state==="disconnected"?"var(--red)":robot.state==="idle"?"var(--green)":"var(--amber)";
+
+  const renderPage=()=>{
+    switch(page){
+      case "dashboard": return <Dashboard robot={robot}/>;
+      case "profiles":  return <Profiles/>;
+      case "scan":      return <ScanPrint/>;
+      case "jobs":      return <Jobs/>;
+      case "robot":     return <RobotControl robot={robot}/>;
+    }
+  };
+
+  return <>
+    <ToastHost/>
+    <div className="shell">
+      <nav className="sidebar">
+        <div className="logo">
+          <div className="logo-name">HW Robot</div>
+          <div className="logo-sub">ESP32 Pen Plotter</div>
+        </div>
+        <div className="nav">
+          <div className="nav-sec">Menu</div>
+          {PAGES.map(p=><button key={p.id} className={`ni ${page===p.id?"on":""}`} onClick={()=>setPage(p.id)}>
+            <span className="ni-ic">{p.ic}</span>{p.label}
+          </button>)}
+        </div>
+        <div className="robot-box">
+          <div className="rb-title">Robot</div>
+          <div className="rb-state">
+            <div className={`dot ${robot.state==="disconnected"?"dot-off":robot.state==="idle"?"dot-on":"dot-busy"}`}/>
+            <span className="rb-name" style={{color:stateColor}}>{robot.state}</span>
+          </div>
+          {robot.state!=="disconnected"&&<div className="rb-pos">
+            <div className="rp"><span className="rp-a">X </span><span className="rp-v">{(robot.pos?.x||0).toFixed(1)}</span></div>
+            <div className="rp"><span className="rp-a">Y </span><span className="rp-v">{(robot.pos?.y||0).toFixed(1)}</span></div>
+          </div>}
+        </div>
+      </nav>
+      <main className="main">
+        <div className="topbar">
+          <div className="page-title">{cur?.label}</div>
+        </div>
+        <div className="content">{renderPage()}</div>
+      </main>
+    </div>
+  </>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
